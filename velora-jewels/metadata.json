@@ -1,0 +1,6 @@
+{
+  "name": "VELORA JEWELS | Luxury Jewellery Studio Jaipur",
+  "description": "Contemporary luxury jewellery studio in Jaipur, Rajasthan. Handcrafted gold, certified diamond, and gemstone fine jewellery, bridal edits, and bespoke private commissions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
