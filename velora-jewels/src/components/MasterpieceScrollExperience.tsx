@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { motion, useScroll, AnimatePresence } from 'motion/react';
-import { Sparkles, Gem, ShieldCheck, ArrowRight, RotateCw, Flame, Award, Eye } from 'lucide-react';
+import { Sparkles, Gem, ShieldCheck, ArrowRight, Flame, Award } from 'lucide-react';
 
 export type AnimationChapter = 'diamond' | 'gold';
 
@@ -26,9 +26,6 @@ export const MasterpieceScrollExperience: React.FC<MasterpieceScrollExperiencePr
 
   const [activeChapter, setActiveChapter] = useState<AnimationChapter>('diamond');
   const currentRenderedIdx = useRef<number>(-1);
-
-  const [activeFrame, setActiveFrame] = useState<number>(1);
-  const [isAutoSpinning, setIsAutoSpinning] = useState<boolean>(false);
   const [loadProgress, setLoadProgress] = useState<{ diamond: number; gold: number }>({ diamond: 0, gold: 0 });
 
   // Scroll Progress across this 360vh section
@@ -121,7 +118,6 @@ export const MasterpieceScrollExperience: React.FC<MasterpieceScrollExperiencePr
       if (img && img.complete) {
         drawImageCover(ctx, canvas, img);
         currentRenderedIdx.current = validFrame;
-        setActiveFrame(validFrame + 1);
       }
     }
   }, [activeChapter, findNearestLoadedFrame, drawImageCover]);
@@ -246,8 +242,6 @@ export const MasterpieceScrollExperience: React.FC<MasterpieceScrollExperiencePr
 
   // Link scroll progress to frame index with smooth damping
   useEffect(() => {
-    if (isAutoSpinning) return;
-
     const unsubscribe = scrollYProgress.on('change', (latestProgress) => {
       setScrollProgressVal(latestProgress);
       const targetFrame = Math.min(
@@ -258,19 +252,7 @@ export const MasterpieceScrollExperience: React.FC<MasterpieceScrollExperiencePr
     });
 
     return () => unsubscribe();
-  }, [scrollYProgress, renderFrame, isAutoSpinning]);
-
-  // Auto-spin option for previewing without scrolling
-  useEffect(() => {
-    if (!isAutoSpinning) return;
-    let frame = currentRenderedIdx.current >= 0 ? currentRenderedIdx.current : 0;
-    const interval = setInterval(() => {
-      frame = (frame + 1) % TOTAL_FRAMES;
-      renderFrame(frame, true);
-    }, 33); // ~30fps
-
-    return () => clearInterval(interval);
-  }, [isAutoSpinning, renderFrame]);
+  }, [scrollYProgress, renderFrame]);
 
   // Switch chapter handler
   const handleSelectChapter = (chapter: AnimationChapter) => {
@@ -541,60 +523,6 @@ export const MasterpieceScrollExperience: React.FC<MasterpieceScrollExperiencePr
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
-
-        {/* Bottom Interactive HUD (Frame Counter, Scrubber, & Spin Controls) */}
-        <div className="absolute bottom-8 left-4 sm:left-10 right-4 sm:right-10 flex flex-wrap items-center justify-between gap-4 z-20 pointer-events-auto">
-          
-          {/* Frame Counter HUD */}
-          <div className="flex items-center gap-3 bg-[#111013]/90 backdrop-blur-md px-4 py-2.5 rounded-xl border border-[#2e281f] text-xs shadow-xl">
-            <span className="text-[10px] uppercase tracking-widest text-[#8a7f6c]">ROTATION FRAME</span>
-            <div className="font-mono text-sm font-semibold text-[#f8f5ee]">
-              <span className={activeChapter === 'diamond' ? 'text-[#7dd3fc]' : 'text-[#d4af37]'}>
-                {String(activeFrame).padStart(3, '0')}
-              </span>
-              <span className="text-[#595244] mx-1">/</span>
-              <span className="text-[#8a7f6c]">{TOTAL_FRAMES}</span>
-            </div>
-            
-            {/* Scrubber Progress Fill Line */}
-            <div className="w-20 sm:w-32 h-1.5 bg-[#201d18] rounded-full overflow-hidden ml-1">
-              <div 
-                className={`h-full transition-all duration-75 ${
-                  activeChapter === 'diamond' 
-                    ? 'bg-gradient-to-r from-[#38bdf8] to-[#bae6fd]' 
-                    : 'bg-gradient-to-r from-[#d4af37] to-[#faedd0]'
-                }`}
-                style={{ width: `${(activeFrame / TOTAL_FRAMES) * 100}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Right Controls: Auto-spin Toggle & Scroll Hint */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsAutoSpinning(!isAutoSpinning)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs tracking-wider uppercase transition-all shadow-xl ${
-                isAutoSpinning 
-                  ? activeChapter === 'diamond'
-                    ? 'bg-[#38bdf8] text-[#0f172a] border-[#38bdf8] font-semibold'
-                    : 'bg-[#d4af37] text-[#0b0b0d] border-[#d4af37] font-semibold' 
-                  : 'bg-[#141210]/90 text-[#d8cebe] border-[#383124] hover:border-[#d4af37]'
-              }`}
-              title="Toggle automatic 360 degree spin"
-            >
-              <RotateCw className={`w-3.5 h-3.5 ${isAutoSpinning ? 'animate-spin' : ''}`} />
-              <span>{isAutoSpinning ? 'Pause 360°' : 'Auto 360°'}</span>
-            </button>
-
-            <div className="hidden sm:flex items-center gap-2 text-[11px] uppercase tracking-widest text-[#a89d88] bg-[#111013]/85 px-4 py-2.5 rounded-xl border border-[#2e281f] shadow-xl">
-              <span className={`inline-block w-1.5 h-1.5 rounded-full animate-bounce ${
-                activeChapter === 'diamond' ? 'bg-[#7dd3fc]' : 'bg-[#d4af37]'
-              }`} />
-              <span>Scroll to scrub 360°</span>
-            </div>
-          </div>
-
         </div>
 
       </div>
